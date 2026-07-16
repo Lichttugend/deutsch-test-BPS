@@ -1,4 +1,5 @@
 import { ScoreRecord } from '../types';
+import { getGerNiveau, isAusbildungSufficient } from '../utils/gerNiveau';
 
 interface ResultScreenProps {
   score: number;
@@ -20,6 +21,12 @@ const categoryLabels: Record<string, string> = {
 export default function ResultScreen({ score, total, category, onHome, onRetry }: ResultScreenProps) {
   const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
 
+  // BPSテストは120点満点に換算してGERレベルを判定
+  const bpsPoints = total > 0 ? Math.round((score / total) * 120) : 0;
+  const ger = getGerNiveau(bpsPoints);
+  const sufficient = isAusbildungSufficient(bpsPoints);
+  const isMockTest = category === 'mocktest';
+
   const getColor = () => {
     if (percentage >= 70) return 'text-green-600';
     if (percentage >= 50) return 'text-yellow-600';
@@ -38,13 +45,21 @@ export default function ResultScreen({ score, total, category, onHome, onRetry }
     return 'Weiter üben! Wiederholen Sie die schwierigen Themen.';
   };
 
+  const getLevelColor = () => {
+    if (bpsPoints >= 65) return 'text-green-700 bg-green-100 border-green-300';
+    if (bpsPoints >= 54) return 'text-yellow-700 bg-yellow-100 border-yellow-300';
+    return 'text-red-700 bg-red-100 border-red-300';
+  };
+
   const history: ScoreRecord[] = JSON.parse(localStorage.getItem('deutschTestHistory') || '[]');
   const recentHistory = history.slice(-5).reverse();
 
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className={`bg-white rounded-2xl shadow-lg border-2 ${getBgColor()} p-8 text-center mb-6`}>
+      <div className="w-full max-w-md space-y-4">
+
+        {/* スコアカード */}
+        <div className={`bg-white rounded-2xl shadow-lg border-2 ${getBgColor()} p-8 text-center`}>
           <div className="text-6xl mb-4">
             {percentage >= 70 ? '🎉' : percentage >= 50 ? '👍' : '📚'}
           </div>
@@ -61,7 +76,55 @@ export default function ResultScreen({ score, total, category, onHome, onRetry }
           <p className="text-gray-600">{getMessage()}</p>
         </div>
 
-        <div className="flex gap-3 mb-6">
+        {/* GERレベル判定カード（模擬テスト時のみ表示） */}
+        {isMockTest && (
+          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6">
+            <h3 className="font-bold text-gray-800 text-lg mb-1 flex items-center gap-2">
+              <span>🎯</span> GER-Niveau Einschätzung
+            </h3>
+            <p className="text-xs text-gray-400 mb-4">
+              Hochrechnung auf 120 Punkte (BPS-Skala): <strong>{bpsPoints} Pkt.</strong>
+            </p>
+
+            <div className={`rounded-xl border-2 px-5 py-4 mb-4 ${getLevelColor()}`}>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="text-3xl font-extrabold">{ger.level}</span>
+                {ger.subLevel && (
+                  <span className="text-sm font-medium opacity-80">({ger.subLevel})</span>
+                )}
+              </div>
+              {ger.kDL.length > 0 && (
+                <p className="text-sm font-semibold mb-2">
+                  Mögl. K-DL: {ger.kDL.join(', ')}
+                </p>
+              )}
+              <p className="text-sm leading-relaxed">
+                Die Deutschkenntnisse sind {ger.description}
+              </p>
+            </div>
+
+            {/* Ausbildung/Umschulung判定 */}
+            {sufficient ? (
+              <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-sm text-green-800">
+                <span className="text-lg">✅</span>
+                <p>
+                  Ihr Sprachniveau ist <strong>grundsätzlich ausreichend</strong> für eine Ausbildung oder Umschulung.
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-800">
+                <span className="text-lg">⚠️</span>
+                <p>
+                  Dieses Sprachniveau ist <strong>in der Regel nicht ausreichend</strong> für eine Ausbildung oder Umschulung.
+                  Weitere Sprachkurse werden empfohlen.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ボタン */}
+        <div className="flex gap-3">
           <button
             onClick={onRetry}
             className="flex-1 py-3 px-4 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors"
@@ -76,6 +139,7 @@ export default function ResultScreen({ score, total, category, onHome, onRetry }
           </button>
         </div>
 
+        {/* 履歴 */}
         {recentHistory.length > 0 && (
           <div className="bg-white rounded-2xl shadow p-4">
             <h3 className="font-semibold text-gray-700 mb-3">Letzte Ergebnisse</h3>
