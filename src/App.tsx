@@ -4,13 +4,15 @@ import Home from './components/Home';
 import Exercise from './components/Exercise';
 import MockTest from './components/MockTest';
 import ResultScreen from './components/ResultScreen';
+import PossessivartikelExercise from './components/PossessivartikelExercise';
 import { leseverstehenQuestions } from './data/leseverstehen';
 import { lueckentextQuestions } from './data/lueckentext';
 import { grammatikQuestions } from './data/grammatik';
 import { wortschatzQuestions } from './data/wortschatz';
 import { rechtschreibungQuestions } from './data/rechtschreibung';
+import { possessivartikelTexts } from './data/possessivartikel';
 
-type View = 'home' | 'exercise' | 'mocktest' | 'result';
+type View = 'home' | 'exercise' | 'mocktest' | 'result' | 'possessivartikel';
 
 const allQuestions: Record<Category, Question[]> = {
   leseverstehen: leseverstehenQuestions,
@@ -73,6 +75,10 @@ export default function App() {
     setView('mocktest');
   };
 
+  const handleStartPossessivartikel = () => {
+    setView('possessivartikel');
+  };
+
   const handleFinish = (score: number, total: number) => {
     const category = view === 'mocktest' ? 'mocktest' : (activeCategory ?? 'unknown');
     saveScore(category, score, total);
@@ -90,8 +96,22 @@ export default function App() {
     }
   };
 
+  if (view === 'possessivartikel') {
+    return (
+      <PossessivartikelExercise
+        texts={possessivartikelTexts}
+        onFinish={(score, total) => {
+          saveScore('possessivartikel', score, total);
+          setLastScore({ score, total, category: 'possessivartikel' });
+          setView('result');
+        }}
+        onHome={() => setView('home')}
+      />
+    );
+  }
+
   if (view === 'home') {
-    return <Home onStart={handleStartExercise} onMockTest={handleStartMockTest} />;
+    return <Home onStart={handleStartExercise} onMockTest={handleStartMockTest} onPossessivartikel={handleStartPossessivartikel} />;
   }
 
   if (view === 'exercise' && activeCategory) {

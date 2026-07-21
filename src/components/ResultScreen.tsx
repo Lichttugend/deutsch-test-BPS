@@ -15,6 +15,7 @@ const categoryLabels: Record<string, string> = {
   grammatik: 'Grammatik',
   wortschatz: 'Wortschatz',
   rechtschreibung: 'Rechtschreibung',
+  possessivartikel: 'Possessivartikel',
   mocktest: 'Probetest',
 };
 
