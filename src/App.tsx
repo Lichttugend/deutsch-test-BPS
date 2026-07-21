@@ -5,14 +5,16 @@ import Exercise from './components/Exercise';
 import MockTest from './components/MockTest';
 import ResultScreen from './components/ResultScreen';
 import PossessivartikelExercise from './components/PossessivartikelExercise';
+import ClozeExercise from './components/ClozeExercise';
 import { leseverstehenQuestions } from './data/leseverstehen';
 import { lueckentextQuestions } from './data/lueckentext';
 import { grammatikQuestions } from './data/grammatik';
 import { wortschatzQuestions } from './data/wortschatz';
 import { rechtschreibungQuestions } from './data/rechtschreibung';
 import { possessivartikelTexts } from './data/possessivartikel';
+import { artikelTexts } from './data/artikel';
 
-type View = 'home' | 'exercise' | 'mocktest' | 'result' | 'possessivartikel';
+type View = 'home' | 'exercise' | 'mocktest' | 'result' | 'possessivartikel' | 'artikel';
 
 const allQuestions: Record<Category, Question[]> = {
   leseverstehen: leseverstehenQuestions,
@@ -79,6 +81,10 @@ export default function App() {
     setView('possessivartikel');
   };
 
+  const handleStartArtikel = () => {
+    setView('artikel');
+  };
+
   const handleFinish = (score: number, total: number) => {
     const category = view === 'mocktest' ? 'mocktest' : (activeCategory ?? 'unknown');
     saveScore(category, score, total);
@@ -96,6 +102,21 @@ export default function App() {
     }
   };
 
+  if (view === 'artikel') {
+    return (
+      <ClozeExercise
+        topicLabel="Bestimmte / unbestimmte Artikel"
+        texts={artikelTexts}
+        onFinish={(score, total) => {
+          saveScore('artikel', score, total);
+          setLastScore({ score, total, category: 'artikel' });
+          setView('result');
+        }}
+        onHome={() => setView('home')}
+      />
+    );
+  }
+
   if (view === 'possessivartikel') {
     return (
       <PossessivartikelExercise
@@ -111,7 +132,7 @@ export default function App() {
   }
 
   if (view === 'home') {
-    return <Home onStart={handleStartExercise} onMockTest={handleStartMockTest} onPossessivartikel={handleStartPossessivartikel} />;
+    return <Home onStart={handleStartExercise} onMockTest={handleStartMockTest} onPossessivartikel={handleStartPossessivartikel} onArtikel={handleStartArtikel} />;
   }
 
   if (view === 'exercise' && activeCategory) {

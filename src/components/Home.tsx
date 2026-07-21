@@ -4,6 +4,7 @@ interface HomeProps {
   onStart: (category: Category) => void;
   onMockTest: () => void;
   onPossessivartikel: () => void;
+  onArtikel: () => void;
 }
 
 const categories: { id: Category; label: string; emoji: string; description: string; color: string }[] = [
@@ -51,10 +52,11 @@ const categoryLabels: Record<string, string> = {
   wortschatz: 'Wortschatz',
   rechtschreibung: 'Rechtschreibung',
   possessivartikel: 'Possessivartikel',
+  artikel: 'Artikel (best./unbest.)',
   mocktest: 'Probetest',
 };
 
-export default function Home({ onStart, onMockTest, onPossessivartikel }: HomeProps) {
+export default function Home({ onStart, onMockTest, onPossessivartikel, onArtikel }: HomeProps) {
   const history: ScoreRecord[] = JSON.parse(localStorage.getItem('deutschTestHistory') || '[]');
 
   const getBestScore = (category: string) => {
@@ -136,7 +138,7 @@ export default function Home({ onStart, onMockTest, onPossessivartikel }: HomePr
           {/* Possessivartikel Card */}
           <button
             onClick={onPossessivartikel}
-            className="bg-white rounded-2xl shadow hover:shadow-md transition-all duration-200 p-5 text-left hover:-translate-y-0.5 active:translate-y-0 sm:col-span-2"
+            className="bg-white rounded-2xl shadow hover:shadow-md transition-all duration-200 p-5 text-left hover:-translate-y-0.5 active:translate-y-0"
           >
             <div className="flex items-start justify-between mb-3">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-2xl shadow">
@@ -156,6 +158,31 @@ export default function Home({ onStart, onMockTest, onPossessivartikel }: HomePr
             </div>
             <h2 className="text-lg font-semibold text-gray-800 mb-1">Possessivartikel</h2>
             <p className="text-sm text-gray-500">Lange Texte mit Lücken · Nom./Akk./Dat. im Kontext üben</p>
+          </button>
+
+          {/* Artikel Card */}
+          <button
+            onClick={onArtikel}
+            className="bg-white rounded-2xl shadow hover:shadow-md transition-all duration-200 p-5 text-left hover:-translate-y-0.5 active:translate-y-0"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-yellow-500 flex items-center justify-center text-2xl shadow">
+                📋
+              </div>
+              {(() => {
+                const best = getBestScore('artikel');
+                if (!best) return null;
+                const pct = Math.round((best.score / best.total) * 100);
+                return (
+                  <span className={`text-xs font-semibold px-2 py-1 rounded-full
+                    ${pct >= 70 ? 'bg-green-100 text-green-700' : pct >= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                    Bestleistung: {pct}%
+                  </span>
+                );
+              })()}
+            </div>
+            <h2 className="text-lg font-semibold text-gray-800 mb-1">Bestimmte / unbestimmte Artikel</h2>
+            <p className="text-sm text-gray-500">der/die/das · ein/eine · Nom./Akk./Dat./Gen. mit Genitivendungen</p>
           </button>
         </div>
 

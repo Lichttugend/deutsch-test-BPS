@@ -1,6 +1,6 @@
-import { PossessivartikelText } from '../types/possessivartikel';
+import { ClozeText } from '../types/cloze';
 
-export const possessivartikelTexts: PossessivartikelText[] = [
+export const possessivartikelTexts: ClozeText[] = [
   {
     id: 'text1',
     title: 'Ein neuer Job',
